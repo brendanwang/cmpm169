@@ -7,6 +7,12 @@
 
 // Constants - User-servicable parts
 // In a longer project I like to put these in a separate file
+
+// =============== Controls ===============
+// Change background color      -   Move mouse cursor
+// Rotate emojis                -   Left mouse click
+// Save canvas as png           -   s
+
 const VALUE1 = 1;
 const VALUE2 = 2;
 
