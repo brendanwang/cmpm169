@@ -1,67 +1,73 @@
 // sketch.js - purpose and description here
-// Author: Your Name
-// Date:
+// Author: Brendan Wang
+// Date: 1/22/2024
 
-// Here is how you might set up an OOP p5.js project
-// Note that p5.js looks for a file called sketch.js
+// Some functions were written by ChatGPT
 
 // Constants - User-servicable parts
 // In a longer project I like to put these in a separate file
-const VALUE1 = 1;
-const VALUE2 = 2;
 
-// Globals
-let myInstance;
-let canvasContainer;
+let pregnantWomanEmojis = ['🤰', '🤰🏼', '🤰🏽', '🤰🏾', '🤰🏿'];
+let rotationAngle = 0;
 
-class MyClass {
-    constructor(param1, param2) {
-        this.property1 = param1;
-        this.property2 = param2;
-    }
-
-    myMethod() {
-        // code to run when method is called
-    }
-}
-
-// setup() function is called once when the program starts
 function setup() {
-    // place our canvas, making it fit our container
-    canvasContainer = $("#canvas-container");
-    let canvas = createCanvas(canvasContainer.width(), canvasContainer.height());
-    canvas.parent("canvas-container");
-    // resize canvas is the page is resized
-    $(window).resize(function() {
-        console.log("Resizing...");
-        resizeCanvas(canvasContainer.width(), canvasContainer.height());
-    });
-    // create an instance of the class
-    myInstance = new MyClass(VALUE1, VALUE2);
-
-    var centerHorz = windowWidth / 2;
-    var centerVert = windowHeight / 2;
+  createCanvas(300, 300);
+  noStroke(); // Remove stroke for a cleaner look
 }
 
-// draw() function is called repeatedly, it's the main animation loop
 function draw() {
-    background(220);    
-    // call a method on the instance
-    myInstance.myMethod();
+  // Dynamic background color based on mouse movement
+  let dynamicColor = color(map(mouseX, 0, width, 0, 255), map(mouseY, 0, height, 0, 255), 200);
+  background(dynamicColor);
 
-    // Put drawings here
-    var centerHorz = canvasContainer.width() / 2 - 125;
-    var centerVert = canvasContainer.height() / 2 - 125;
-    fill(234, 31, 81);
-    noStroke();
-    rect(centerHorz, centerVert, 250, 250);
-    fill(255);
-    textStyle(BOLD);
-    textSize(140);
-    text("p5*", centerHorz + 10, centerVert + 200);
+  // Draw fixed set of pregnant woman emojis on top of the dynamic background
+  drawPregnantWomanEmojis();
 }
 
-// mousePressed() function is called once after every time a mouse button is pressed
+function drawPregnantWomanEmojis() {
+  let emojiSize = 70;
+  let spacingX = 60; // Adjust horizontal spacing
+  let spacingY = 70; // Adjust vertical spacing
+
+  // Calculate the starting point to center the array
+  let startX = width / 12;
+  let startY = height / 6;
+
+  // Draw the fixed set of pregnant woman emojis
+  // Written by ChatGPT
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 3; j++) {
+      let emojiIndex = (i * 3 + j) % pregnantWomanEmojis.length;
+      drawRotatingEmojis(startX + i * spacingX, startY + j * spacingY, emojiSize, pregnantWomanEmojis[emojiIndex]);
+    }
+  }
+}
+
+function drawRotatingEmojis(x, y, size, emoji) {
+  fill(0);
+  textSize(36);
+  textAlign(CENTER, CENTER);
+  push();
+  translate(x + size / 2, y + size / 2);
+  rotate(rotationAngle);
+  scale(1.5, 1.5);
+  text(emoji, 0, 0);
+  pop();
+}
+
+function keyPressed() {
+  if (key === ' ') {
+    // Pregnant woman emojis change when spacebar is pressed
+    // Basically just refreshes the draw function
+    drawPregnantWomanEmojis();
+  } else if (key === 's') {
+    // Save canvas as PNG when 's' is pressed
+    saveCanvas('CLBArtwork', 'png');
+  }
+}
+
 function mousePressed() {
-    // code to run when mouse is pressed
+  // Rotate the emojis when mouse is pressed
+  rotationAngle += radians(45);
+  drawPregnantWomanEmojis();
 }
