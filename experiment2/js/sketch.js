@@ -1,6 +1,8 @@
 // sketch.js - purpose and description here
-// Author: Your Name
-// Date:
+// Author: Brendan Wang
+// Date: 1/29/2024
+
+// Some functions were written by ChatGPT
 
 // Here is how you might set up an OOP p5.js project
 // Note that p5.js looks for a file called sketch.js
@@ -8,66 +10,53 @@
 // Constants - User-servicable parts
 // In a longer project I like to put these in a separate file
 
-// =============== Controls ===============
-// Change background color      -   Move mouse cursor
-// Rotate emojis                -   Left mouse click
-// Save canvas as png           -   s
+let t = 0; // Time variable
+let hueOffset = 0; // Initial hue offset
 
-const VALUE1 = 1;
-const VALUE2 = 2;
-
-// Globals
-let myInstance;
-let canvasContainer;
-
-class MyClass {
-    constructor(param1, param2) {
-        this.property1 = param1;
-        this.property2 = param2;
-    }
-
-    myMethod() {
-        // code to run when method is called
-    }
-}
-
-// setup() function is called once when the program starts
 function setup() {
-    // place our canvas, making it fit our container
-    canvasContainer = $("#canvas-container");
-    let canvas = createCanvas(canvasContainer.width(), canvasContainer.height());
-    canvas.parent("canvas-container");
-    // resize canvas is the page is resized
-    $(window).resize(function() {
-        console.log("Resizing...");
-        resizeCanvas(canvasContainer.width(), canvasContainer.height());
-    });
-    // create an instance of the class
-    myInstance = new MyClass(VALUE1, VALUE2);
-
-    var centerHorz = windowWidth / 2;
-    var centerVert = windowHeight / 2;
+  createCanvas(800, 600);
+  colorMode(HSB, 360, 100, 100, 100); // Set color mode to HSB with alpha
 }
 
-// draw() function is called repeatedly, it's the main animation loop
 function draw() {
-    background(220);    
-    // call a method on the instance
-    myInstance.myMethod();
+  background(255); // Set background to black
 
-    // Put drawings here
-    var centerHorz = canvasContainer.width() / 2 - 125;
-    var centerVert = canvasContainer.height() / 2 - 125;
-    fill(234, 31, 81);
-    noStroke();
-    rect(centerHorz, centerVert, 250, 250);
-    fill(255);
-    textStyle(BOLD);
-    textSize(140);
-    text("p5*", centerHorz + 10, centerVert + 200);
-}
-
-// mousePressed() function is called once after every time a mouse button is pressed
-function mousePressed() {
-    // code to run when mouse is pressed
+  // Draw waves
+  for (let y = 0; y < height; y += 20) {
+    let hue = (hueOffset + y / 2) % 360; // Gradual change in hue value
+    let waveColor = color(hue, 80, 80, 50);
+    
+    stroke(waveColor); // Set stroke color for the wave line
+    noFill(); // Set fill color to transparent
+    strokeWeight(3); // Set the thickness of the lines
+    
+    beginShape();
+    for (let x = 0; x < width; x += 10) {
+      let angle = map(x, 0, width, 0, TWO_PI);
+      let offset = map(y, 0, height, -50, 50);
+      let amplitude = map(sin(angle + offset), -1, 1, 0, 100);
+      let wave = amplitude * sin(TWO_PI * x / width + t);
+      vertex(x, y + wave);
+    }
+    endShape();
+    
+    // Fill underneath wave line with translucent color
+    fill(waveColor);
+    beginShape();
+    for (let x = 0; x < width; x += 10) {
+      let angle = map(x, 0, width, 0, TWO_PI);
+      let offset = map(y, 0, height, -50, 50);
+      let amplitude = map(sin(angle + offset), -1, 1, 0, 100);
+      let wave = amplitude * sin(TWO_PI * x / width + t);
+      vertex(x, y + wave);
+    }
+    vertex(width, height); // Bottom right corner
+    vertex(0, height); // Bottom left corner
+    endShape(CLOSE);
+  }
+  
+  // Increment time
+  t += 0.02;
+  // Gradually change hue offset
+  hueOffset += 0.3;
 }
