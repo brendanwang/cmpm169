@@ -1,6 +1,6 @@
 // sketch.js - purpose and description here
 // Author: Brendan Wang
-// Date: 1/22/2024
+// Date: 2/5/2024
 
 // Some functions were written by ChatGPT
 // ------------ Controls ------------
