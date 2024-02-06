@@ -1,3 +1,14 @@
+// sketch.js - purpose and description here
+// Author: Brendan Wang
+// Date: 1/22/2024
+
+// Some functions were written by ChatGPT
+// ------------ Controls ------------
+// Mouse Click --------- Cycle Filter
+
+// Constants - User-servicable parts
+// In a longer project I like to put these in a separate file
+
 let video;
 let gridSize = 10;
 let letters = "BRENDAN";
