@@ -1,67 +1,63 @@
-// sketch.js - purpose and description here
-// Author: Your Name
-// Date:
+let video;
+let gridSize = 10;
+let letters = "BRENDAN";
+let letterSizes = [];
+let currentFilterIndex = 0;
+let filters = [
+  { name: "Original", apply: (r, g, b, brightnessValue) => color(r, g, b) },
+  { name: "Grayscale", apply: (r, g, b, brightnessValue) => color(brightnessValue) },
+  { name: "Inverted", apply: (r, g, b, brightnessValue) => color(255 - r, 255 - g, 255 - b) },
+  { name: "Red Tint", apply: (r, g, b, brightnessValue) => color(r * 2, g, b) },
+  { name: "Blue Tint", apply: (r, g, b, brightnessValue) => color(r, g, b * 2) },
+  { name: "Green Tint", apply: (r, g, b, brightnessValue) => color(r, g * 2, b) },
+  { name: "Rainbow", apply: (r, g, b, brightnessValue) => color(random(255), random(255), random(255)) },
+  { name: "Random Color", apply: (r, g, b, brightnessValue) => color(random(255), random(255), random(255)) },
+  { name: "Neon", apply: (r, g, b, brightnessValue) => color(map(brightnessValue, 0, 255, 0, 255), 255, map(brightnessValue, 0, 255, 255, 0)) }
+];
 
-// Here is how you might set up an OOP p5.js project
-// Note that p5.js looks for a file called sketch.js
-
-// Constants - User-servicable parts
-// In a longer project I like to put these in a separate file
-const VALUE1 = 1;
-const VALUE2 = 2;
-
-// Globals
-let myInstance;
-let canvasContainer;
-
-class MyClass {
-    constructor(param1, param2) {
-        this.property1 = param1;
-        this.property2 = param2;
-    }
-
-    myMethod() {
-        // code to run when method is called
-    }
-}
-
-// setup() function is called once when the program starts
 function setup() {
-    // place our canvas, making it fit our container
-    canvasContainer = $("#canvas-container");
-    let canvas = createCanvas(canvasContainer.width(), canvasContainer.height());
-    canvas.parent("canvas-container");
-    // resize canvas is the page is resized
-    $(window).resize(function() {
-        console.log("Resizing...");
-        resizeCanvas(canvasContainer.width(), canvasContainer.height());
-    });
-    // create an instance of the class
-    myInstance = new MyClass(VALUE1, VALUE2);
+  createCanvas(640, 480);
+  video = createCapture(VIDEO);
+  video.size(width, height);
+  video.hide();
+  textSize(gridSize);
 
-    var centerHorz = windowWidth / 2;
-    var centerVert = windowHeight / 2;
+  // Generate random sizes for each letter
+  for (let i = 0; i < letters.length; i++) {
+    letterSizes[i] = random(8, 16); // Random size between 8 and 16
+  }
 }
 
-// draw() function is called repeatedly, it's the main animation loop
 function draw() {
-    background(220);    
-    // call a method on the instance
-    myInstance.myMethod();
+  background(30); // Darker background
+  video.loadPixels();
 
-    // Put drawings here
-    var centerHorz = canvasContainer.width() / 2 - 125;
-    var centerVert = canvasContainer.height() / 2 - 125;
-    fill(234, 31, 81);
-    noStroke();
-    rect(centerHorz, centerVert, 250, 250);
-    fill(255);
-    textStyle(BOLD);
-    textSize(140);
-    text("p5*", centerHorz + 10, centerVert + 200);
+  textStyle(BOLD); // Set text style to bold
+
+  for (let y = 0; y < height; y += gridSize) {
+    for (let x = 0; x < width; x += gridSize) {
+      let loc = (x + y * width) * 4;
+      let r = video.pixels[loc];
+      let g = video.pixels[loc + 1];
+      let b = video.pixels[loc + 2];
+      let brightnessValue = brightness(r, g, b);
+      let index = int(map(brightnessValue, 0, 255, 0, letters.length));
+
+      let textColor = filters[currentFilterIndex].apply(r, g, b, brightnessValue);
+
+      // Add animation: subtle movement
+      let posX = x + random(-1, 1);
+      let posY = y + random(-1, 1);
+      let size = letterSizes[index];
+      textSize(size);
+      fill(textColor);
+      textAlign(CENTER, CENTER);
+      text(letters[index], posX, posY);
+    }
+  }
 }
 
-// mousePressed() function is called once after every time a mouse button is pressed
-function mousePressed() {
-    // code to run when mouse is pressed
+function mouseClicked() {
+  // Cycle through filters on mouse click
+  currentFilterIndex = (currentFilterIndex + 1) % filters.length;
 }
