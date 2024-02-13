@@ -13,7 +13,6 @@
 // Constants - User-servicable parts
 // In a longer project I like to put these in a separate file
 
-let backgroundMusic; 
 let sunRadius = 200;
 let planetDistances = [500, 650, 800, 950, 1500, 1800, 1900, 2050];
 let planetSizes = [10, 15, 20, 17, 50, 40, 30, 30];
@@ -36,30 +35,14 @@ let explosions = [];
 // Array to store planet trails
 let planetTrails = [];
 
-function preload() {
-    backgroundMusic = loadSound('experiment4/music/music.mp3');
-  }
-
 function setup() {
   createCanvas(1920, 1080, WEBGL); // Set canvas size to 1920x1080
-  playBackgroundMusic();
   // Start with one explosion
   createExplosion();
 
   // Initialize planet trails
   for (let i = 0; i < planetDistances.length; i++) {
     planetTrails.push([]);
-  }
-}
-
-function playBackgroundMusic() {
-  // Check if the sound file is loaded successfully
-  if (backgroundMusic.isLoaded()) {
-    // Loop the background music infinitely
-    backgroundMusic.loop();
-  } else {
-    // If the sound file is not loaded, print an error message
-    console.error('Error: Background music could not be loaded.');
   }
 }
 
