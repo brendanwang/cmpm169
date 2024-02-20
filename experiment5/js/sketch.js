@@ -1,67 +1,89 @@
-// sketch.js - purpose and description here
-// Author: Your Name
-// Date:
+// sketch.js - Text Video Feed with Animations
+// Author: Brendan Wang
+// Date: 2/19/2024
 
-// Here is how you might set up an OOP p5.js project
-// Note that p5.js looks for a file called sketch.js
 
-// Constants - User-servicable parts
-// In a longer project I like to put these in a separate file
-const VALUE1 = 1;
-const VALUE2 = 2;
+// Some functions were written by ChatGPT
+// --------------- Controls ---------------
+// Left Mouse Click --------- Change Color
 
-// Globals
-let myInstance;
-let canvasContainer;
+let video;
+let captureSize = 10; // Size of each capture point
+let threshold = 150; // Threshold for converting video to black and white
+let letters = "EXPERIMENT6GRAMMARSANDTEXT"; // Letters to display
+let prevBrightness = 0; // Variable to store previous frame's brightness
+let isColorMode = false; // Variable to store the current mode (black and white or color)
 
-class MyClass {
-    constructor(param1, param2) {
-        this.property1 = param1;
-        this.property2 = param2;
-    }
-
-    myMethod() {
-        // code to run when method is called
-    }
-}
-
-// setup() function is called once when the program starts
 function setup() {
-    // place our canvas, making it fit our container
-    canvasContainer = $("#canvas-container");
-    let canvas = createCanvas(canvasContainer.width(), canvasContainer.height());
-    canvas.parent("canvas-container");
-    // resize canvas is the page is resized
-    $(window).resize(function() {
-        console.log("Resizing...");
-        resizeCanvas(canvasContainer.width(), canvasContainer.height());
-    });
-    // create an instance of the class
-    myInstance = new MyClass(VALUE1, VALUE2);
-
-    var centerHorz = windowWidth / 2;
-    var centerVert = windowHeight / 2;
+  createCanvas(640, 480);
+  video = createCapture(VIDEO);
+  video.size(width / captureSize, height / captureSize);
+  video.hide(); // Hide the video feed
+  textSize(12);
+  textStyle(BOLD);
 }
 
-// draw() function is called repeatedly, it's the main animation loop
 function draw() {
-    background(220);    
-    // call a method on the instance
-    myInstance.myMethod();
+  background(0);
+  video.loadPixels();
+  let index = 0; // Initialize index counter for letters
+  let totalBrightness = 0; // Variable to store total brightness of the frame
+  for (let y = 0; y < video.height; y++) {
+    for (let x = 0; x < video.width; x++) {
+      let indexInString = index % letters.length; // Wrap around index to fit the length of the letters string
+      let currentLetter = letters.charAt(indexInString); // Get current letter based on index
+      let indexColor = (video.width * y + x) * 4; // Index to retrieve color from video pixels
+      let r = video.pixels[indexColor];
+      let g = video.pixels[indexColor + 1];
+      let b = video.pixels[indexColor + 2];
+      let brightnessValue = (r + g + b) / 3; // Calculate brightness
+      
+      if (isColorMode) {
+        let textColor = color(r, g, b); // Create color object based on RGB values
+        fill(textColor);
+      } else {
+        let textColor = map(brightnessValue, 0, 255, 0, 255); // Adjusting color range for black and white mode
+        fill(textColor);
+      }
 
-    // Put drawings here
-    var centerHorz = canvasContainer.width() / 2 - 125;
-    var centerVert = canvasContainer.height() / 2 - 125;
-    fill(234, 31, 81);
-    noStroke();
-    rect(centerHorz, centerVert, 250, 250);
-    fill(255);
-    textStyle(BOLD);
-    textSize(140);
-    text("p5*", centerHorz + 10, centerVert + 200);
+      let xPos = x * captureSize;
+      let yPos = y * captureSize;
+      text(currentLetter, xPos, yPos);
+      
+      totalBrightness += brightnessValue; // Accumulate brightness value for the frame
+      index++; // Move to the next letter
+    }
+  }
+  
+  // No need to calculate average brightness as we're using color
+  // We'll still trigger the animation based on brightness change, but you can adjust this logic according to your needs
+  let avgBrightness = totalBrightness / (video.width * video.height);
+  if (abs(avgBrightness - prevBrightness) > 10) {
+    animateLetters();
+  }
+  prevBrightness = avgBrightness;
 }
 
-// mousePressed() function is called once after every time a mouse button is pressed
-function mousePressed() {
-    // code to run when mouse is pressed
+// Function to animate the letters
+function animateLetters() {
+  let amplitude = 10000;
+  let frequency = 1;
+  
+  for (let i = 0; i < letters.length; i++) {
+    let displacementX = amplitude * sin(frequency * frameCount + i * 0.1);
+    let displacementY = amplitude * cos(frequency * frameCount + i * 0.1);
+    
+    let xPos = (i % (width / captureSize)) * captureSize;
+    let yPos = floor(i / (width / captureSize)) * captureSize;
+    
+    let newXPos = xPos + displacementX;
+    let newYPos = yPos + displacementY;
+    
+    fill(255);
+    text(letters.charAt(i), newXPos, newYPos);
+  }
+}
+
+function mouseClicked() {
+  isColorMode = !isColorMode; // Toggle between black and white and color modes
 }
