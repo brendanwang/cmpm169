@@ -1,67 +1,114 @@
-// sketch.js - purpose and description here
-// Author: Your Name
-// Date:
+let angleX = 0;
+let angleY = 0;
+let zoom = 1.0; // Initial zoom level
 
-// Here is how you might set up an OOP p5.js project
-// Note that p5.js looks for a file called sketch.js
+let table;
+let r = 200;
 
-// Constants - User-servicable parts
-// In a longer project I like to put these in a separate file
-const VALUE1 = 1;
-const VALUE2 = 2;
+let earth;
 
-// Globals
-let myInstance;
-let canvasContainer;
+// Array to store shooting star objects
+let shootingStars = [];
 
-class MyClass {
-    constructor(param1, param2) {
-        this.property1 = param1;
-        this.property2 = param2;
-    }
-
-    myMethod() {
-        // code to run when method is called
-    }
+function preload() {
+  earth = loadImage('earth.jpg');
+  table = loadTable(
+    'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.csv',
+    'header'
+  );
 }
 
-// setup() function is called once when the program starts
 function setup() {
-    // place our canvas, making it fit our container
-    canvasContainer = $("#canvas-container");
-    let canvas = createCanvas(canvasContainer.width(), canvasContainer.height());
-    canvas.parent("canvas-container");
-    // resize canvas is the page is resized
-    $(window).resize(function() {
-        console.log("Resizing...");
-        resizeCanvas(canvasContainer.width(), canvasContainer.height());
-    });
-    // create an instance of the class
-    myInstance = new MyClass(VALUE1, VALUE2);
-
-    var centerHorz = windowWidth / 2;
-    var centerVert = windowHeight / 2;
+  createCanvas(600, 600, WEBGL);
+  
+  // Initialize shooting star objects
+  for (let i = 0; i < 5; i++) {
+    shootingStars.push(new ShootingStar());
+  }
 }
 
-// draw() function is called repeatedly, it's the main animation loop
 function draw() {
-    background(220);    
-    // call a method on the instance
-    myInstance.myMethod();
+  background(0); // Set background color to black
+  
+  lights();
+  
+  rotateX(angleX);
+  rotateY(angleY);
+  
+  scale(zoom);
+  
+  fill(200);
+  noStroke();
+  texture(earth);
+  sphere(r);
 
-    // Put drawings here
-    var centerHorz = canvasContainer.width() / 2 - 125;
-    var centerVert = canvasContainer.height() / 2 - 125;
-    fill(234, 31, 81);
-    noStroke();
-    rect(centerHorz, centerVert, 250, 250);
+  // Update and display shooting star objects
+  for (let shootingStar of shootingStars) {
+    shootingStar.update();
+    shootingStar.display();
+  }
+
+  for (let row of table.rows) {
+    let lat = row.getNum('latitude');
+    let lon = row.getNum('longitude');
+    let mag = row.getNum('mag');
+    let theta = radians(lat);
+    let phi = radians(lon) + PI;
+    let x = r * cos(theta) * cos(phi);
+    let y = -r * sin(theta);
+    let z = -r * cos(theta) * sin(phi);
+    let pos = createVector(x, y, z);
+    let h = pow(10, mag);
+    let maxh = pow(10, 7);
+    h = map(h, 0, maxh, 10, 100);
+    let xaxis = createVector(1, 0, 0);
+    let angleb = abs(xaxis.angleBetween(pos));
+    let raxis = xaxis.cross(pos);
+
+    push();
+    translate(x, y, z);
+    rotate(angleb, raxis);
     fill(255);
-    textStyle(BOLD);
-    textSize(140);
-    text("p5*", centerHorz + 10, centerVert + 200);
+    box(h, 5, 5);
+    pop();
+  }
 }
 
-// mousePressed() function is called once after every time a mouse button is pressed
-function mousePressed() {
-    // code to run when mouse is pressed
+function mouseDragged() {
+  let sensitivity = 0.01;
+  angleY += sensitivity * (mouseX - pmouseX);
+  angleX += sensitivity * -(mouseY - pmouseY);
 }
+
+function mouseWheel(event) {
+  let sensitivity = 0.01;
+  zoom -= sensitivity * event.delta;
+  zoom = constrain(zoom, 0.5, 2.0);
+  return false;
+}
+
+class ShootingStar {
+  constructor() {
+    this.position = createVector(random(-r, r), random(-r, r), random(-r, r));
+    this.velocity = createVector(random(-10, -5), random(-2, 2), random(-2, 2)); // Adjust velocity for faster movement
+    this.size = random(1, 3); // Adjust size for smaller stars
+  }
+
+  update() {
+    this.position.add(this.velocity);
+    // Wrap around the scene
+    if (this.position.mag() > r * 2) {
+      this.position.mult(-1);
+    }
+  }
+
+  display() {
+    push();
+    translate(this.position.x, this.position.y, this.position.z);
+    fill(255, random(100, 200)); // Random opacity
+    noStroke();
+    sphere(this.size);
+    pop();
+  }
+}
+
